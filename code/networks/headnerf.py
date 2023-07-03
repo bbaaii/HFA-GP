@@ -28,7 +28,7 @@ def toogle_grad(model, flag=True):
 
 
 
-def load_G_official(args, device, eg3d_ffhq = '/apdcephfs_cq2/share_1290939/kitbai/eg3d-our/pretrained_models/eg3d/ffhqrebalanced512-128.pkl'):
+def load_G_official(args, device, eg3d_ffhq = './pretrained_models/eg3d/ffhqrebalanced512-128.pkl'):
     with dnnlib.util.open_url(eg3d_ffhq) as f:
     # with open(paths_config.stylegan2_ada_ffhq, 'rb') as f:
         old_G = legacy.load_network_pkl(f)['G_ema'].requires_grad_(False).to(device) 
@@ -40,121 +40,19 @@ def load_G_official(args, device, eg3d_ffhq = '/apdcephfs_cq2/share_1290939/kitb
         
 
 
-class HeadNeRF(nn.Module):
-    def __init__(self,args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = '/apdcephfs_cq2/share_1290939/kitbai/PTI/embeddings/',use_softmax = False):
-        super(HeadNeRF, self).__init__()
-        self.base_dir = emb_dir + run_id + '/PTI/'
-        self.device = device
-        self.encoder = Encoder_whole(size, dim, dim_shape, args.meta_GLO_dim , use_softmax, args.out_pose)
-        self.args = args
-        self.out_pose = args.out_pose
-        self.dim  = dim
-        self.dim_shape = dim_shape
-        if args.init:
-            bases = load_bases(self.device, self.base_dir, dim_shape).view(self.dim_shape,-1)
-        else:
-            bases = torch.randn(self.dim_shape, 14*self.dim).to(device)
-        self.bases = torch.nn.Parameter(bases, requires_grad=True)
-        self.delta = torch.nn.Parameter(bases.mean(dim = 0), requires_grad=True)
-
-        # print(self.bases)
-        if args.person_2 :
-            
-            base_dir_2 =  emb_dir + args.run_id_2 + '/PTI/'
-            if args.init:
-                bases_2 = load_bases(self.device, base_dir_2, dim_shape).view(self.dim_shape,-1)
-            else:
-                bases_2 = torch.randn(self.dim_shape, 18*self.dim).to(device)
-            if not args.same_bases:
-                self.bases_2 = torch.nn.Parameter(bases_2, requires_grad=True)
-            self.delta_2 = torch.nn.Parameter(bases_2.mean(dim = 0), requires_grad=True)
-            # print(self.bases_2)
-        
-
-        self.generator = load_G_official(args, self.device )
-    
-    def get_delta(self, person_2 = False):
-        if not person_2:
-            return self.delta.view(-1, self.dim)
-        else:
-            return self.delta_2.view(-1, self.dim)
-
-    def get_latent(self, weights, person_2 = False):
-        b = weights.shape[0]
-
-        if not person_2:
-            # print('person_1')
-            bases = self.bases + 1e-8
-        else:
-            # print('person_2')
-            if not self.args.same_bases:
-                bases = self.bases_2 + 1e-8
-            else:
-                bases = self.bases + 1e-8
-        Q, R = torch.qr(bases.T)  # get eignvector, orthogonal [n1, n2, n3, n4]
-
-        if weights is None:
-            return Q
-        else:
-            input_diag = torch.diag_embed(weights)  # alpha, diagonal matrix
-            out = torch.matmul(input_diag, Q.T)
-            out = torch.sum(out, dim=1)
-            if not person_2:
-                return out.view(b, -1, self.dim) + self.delta.view(-1, self.dim)
-            else:
-                return out.view(b, -1, self.dim) + self.delta_2.view(-1, self.dim)
-
-
-
-    def forward(self, image, label, person_2 = False):
-
-        label[:, [1,2,5,6,9,10]] *= -1
-
-        if self.out_pose:
-            weights, h_source, pose = self.encoder(image)
-            latent = self.get_latent(weights, person_2)#.unsqueeze(0)
-            img_recon = self.generator.synthesis(latent, c=label, noise_mode='const')['image']
-            return img_recon, h_source, pose
-        else:
-            weights, h_source = self.encoder(image,label)
-
-
-            latent = self.get_latent(weights, person_2)#.unsqueeze(0)
-
-            img_recon = self.generator.synthesis(latent, c=label, noise_mode='const')['image']
-            return img_recon, h_source
-
-        
-    def get_weights(self, image, label):
-        if self.out_pose:
-            weights, h_source, pose = self.encoder(image)
-            return weights, h_source, pose
-        else:
-            weights, h_source = self.encoder(image, label)
-            return weights, h_source
-        # return 
-    def get_image(self, latent, label):
-        label[:, [1,2,5,6,9,10]] *= -1
-        img_recon = self.generator.synthesis(latent, c=label, noise_mode='const')['image']
-        return img_recon 
-
-
-
 
 class HeadNeRF_final(nn.Module):
-    def __init__(self,args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = '/apdcephfs_cq2/share_1290939/kitbai/PTI/embeddings/',use_softmax = False):
+    def __init__(self,args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = './PTI/embeddings/',use_softmax = False):
         super(HeadNeRF_final, self).__init__()
-        self.base_dir = emb_dir + run_id + '/PTI/'
+        self.base_dir = emb_dir + run_id
         self.device = device
         self.encoder = Encoder(size, dim, dim_shape, use_softmax, args.out_pose)
         self.args = args
         self.out_pose = args.out_pose
         self.dim  = dim
         self.dim_shape = dim_shape
-        if args.init:
-            bases = load_bases(self.device, self.base_dir, dim_shape).view(self.dim_shape,-1)
-        else:
-            bases = torch.randn(self.dim_shape, 14*self.dim).to(device)
+
+        bases = torch.randn(self.dim_shape, 14*self.dim).to(device)
         self.bases = torch.nn.Parameter(bases, requires_grad=True)
         self.delta = torch.nn.Parameter(bases.mean(dim = 0), requires_grad=True)
 
@@ -262,9 +160,9 @@ class Weights_3DMM(nn.Module):
 
 
 class HeadNeRF_3DMM(nn.Module):
-    def __init__(self, args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = '/apdcephfs_cq2/share_1290939/kitbai/PTI/embeddings/',use_softmax = False):
+    def __init__(self, args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = './PTI/embeddings/',use_softmax = False):
         super(HeadNeRF_3DMM, self).__init__()
-        self.base_dir = emb_dir + run_id + '/PTI/'
+        self.base_dir = emb_dir + run_id
         self.device = device
         self.weights_3dmm = Weights_3DMM(input_dim = args.params_len, dim =dim, dim_shape = dim_shape, use_softmax = use_softmax)
         
@@ -322,9 +220,9 @@ class HeadNeRF_3DMM(nn.Module):
 
 
 class HeadNeRF_Audio(nn.Module):
-    def __init__(self, args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = '/apdcephfs_cq2/share_1290939/kitbai/PTI/embeddings/',use_softmax = False):
+    def __init__(self, args ,size, device, dim=512, dim_shape=20, run_id = 'nerface2',emb_dir = './PTI/embeddings/',use_softmax = False):
         super(HeadNeRF_Audio, self).__init__()
-        self.base_dir = emb_dir + run_id + '/PTI/'
+        self.base_dir = emb_dir + run_id 
         self.device = device
         self.weights_3dmm = Weights_3DMM(input_dim = args.params_len, dim =dim, dim_shape = dim_shape, use_softmax = use_softmax)
         
