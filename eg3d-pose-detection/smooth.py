@@ -16,8 +16,6 @@ import json
 
 from scipy.ndimage import gaussian_filter1d
 
-# [os.path.join('/apdcephfs_cq2/share_1290939/kitbai/LIA-3d/datasets/ad_dataset/english_w/train/', i) for i in sorted(os.listdir('/apdcephfs_cq2/share_1290939/kitbai/LIA-3d/datasets/ad_dataset/english_w/train/')) if i.endswith('png') or i.endswith('jpg')]
-# , key=lambda x:int(x.split('/')[-1].split('.')[0])
 
 def get_data_path(root='examples'):
     im_path = [os.path.join(root, i) for i in sorted(os.listdir(root)) if i.endswith('png') or i.endswith('jpg')]
