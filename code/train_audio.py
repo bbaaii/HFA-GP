@@ -5,7 +5,7 @@ from torch.utils import data
 from dataset import HeadData, HeadData_Audio
 import torchvision
 import torchvision.transforms as transforms
-from trainer_audio_e import Trainer
+from trainer_audio import Trainer
 from torch.utils.tensorboard import SummaryWriter
 import torch.distributed as dist
 import torch.multiprocessing as mp
