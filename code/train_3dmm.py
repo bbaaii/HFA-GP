@@ -5,7 +5,7 @@ from torch.utils import data
 from dataset import HeadData_3DMM
 import torchvision
 import torchvision.transforms as transforms
-from trainer_3dmm_e import Trainer
+from trainer_3dmm import Trainer
 from torch.utils.tensorboard import SummaryWriter
 import torch.distributed as dist
 import torch.multiprocessing as mp
