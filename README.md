@@ -1,6 +1,6 @@
 # HFA-GP: High-fidelity Facial Avatar Reconstruction from Monocular Video with Generative Priors
 <p align="center">
-<img src=assets/teaser.png />
+<img src=assets/pipeline-2.png />
 </p>
 
 ## HFA-GP
