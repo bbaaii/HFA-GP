@@ -33,7 +33,7 @@ RGB-driven:
 python3 ./code/train_rgb.py --dataset 'nerface_dataset' --person 'person_3' --exp_path './code/exps/' --exp_name '1-nerface-3-2' 
 ```
 
-# Performing face reenactment
+## Performing face reenactment
 audio-driven：
 ```
 python3 ./code/run_recon_video_audio.py --dataset 'ad_dataset' --person_1 'english_w' --demo_name 'english_w' --dataset_type 'val' --model_path './code/exps/ad-english_m/checkpoint/checkpoint.pt' --cat_video
