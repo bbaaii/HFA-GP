@@ -28,7 +28,7 @@ def toogle_grad(model, flag=True):
 
 
 
-def load_G_official(args, device, eg3d_ffhq = './pretrained_models/eg3d/ffhqrebalanced512-128.pkl'):
+def load_G_official(args, device, eg3d_ffhq = './code/pretrained_models/eg3d/ffhqrebalanced512-128.pkl'):
     with dnnlib.util.open_url(eg3d_ffhq) as f:
     # with open(paths_config.stylegan2_ada_ffhq, 'rb') as f:
         old_G = legacy.load_network_pkl(f)['G_ema'].requires_grad_(False).to(device) 
