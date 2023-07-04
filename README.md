@@ -50,5 +50,17 @@ RGB-driven：
 python3 ./code/run_recon_video_rgb.py --dataset 'nerface_dataset' --person 'person_3' --demo_name '1-nerface3-2-new' --model_path './code/exps/1-nerface/checkpoint/checkpoint.pt' --cat_video --dataset_type 'test' --suffix '.png' --latent_dim_shape 50
 ```
 
+## Citation ##
+Please cite the following paper if you use this repository in your reseach.
+```
+@InProceedings{Bai_2023_CVPR,
+    author    = {Bai, Yunpeng and Fan, Yanbo and Wang, Xuan and Zhang, Yong and Sun, Jingxiang and Yuan, Chun and Shan, Ying},
+    title     = {High-Fidelity Facial Avatar Reconstruction From Monocular Video With Generative Priors},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2023},
+    pages     = {4541-4551}
+}
+
 
 
